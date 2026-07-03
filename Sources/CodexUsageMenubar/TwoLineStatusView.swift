@@ -20,6 +20,10 @@ final class TwoLineStatusView: NSView {
         needsLayout = true
     }
 
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        nil
+    }
+
     private func setup() {
         wantsLayer = true
         for label in [firstLine, secondLine] {
