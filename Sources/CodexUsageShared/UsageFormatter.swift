@@ -9,17 +9,17 @@ public enum UsageFormatter {
             return fallbackLines(for: snapshot.status)
         }
 
-        let resetWidth = max(fiveHour.resetLabel.count, weekly.resetLabel.count)
-        let percentWidth = max("\(fiveHour.remainingPercent)%".count, "\(weekly.remainingPercent)%".count, 4)
+        let labelWidth = max("5h".count, "7d".count)
+        let percentWidth = max("\(fiveHour.remainingPercent)%".count, "\(weekly.remainingPercent)%".count)
 
         return [
-            menuBarLine(resetLabel: fiveHour.resetLabel, percent: fiveHour.remainingPercent, windowLabel: "5h", resetWidth: resetWidth, percentWidth: percentWidth),
-            menuBarLine(resetLabel: weekly.resetLabel, percent: weekly.remainingPercent, windowLabel: "7d", resetWidth: resetWidth, percentWidth: percentWidth)
+            menuBarLine(windowLabel: "5h", percent: fiveHour.remainingPercent, resetLabel: fiveHour.resetLabel, labelWidth: labelWidth, percentWidth: percentWidth),
+            menuBarLine(windowLabel: "7d", percent: weekly.remainingPercent, resetLabel: weekly.resetLabel, labelWidth: labelWidth, percentWidth: percentWidth)
         ]
     }
 
-    private static func menuBarLine(resetLabel: String, percent: Int, windowLabel: String, resetWidth: Int, percentWidth: Int) -> String {
-        "\(resetLabel.leftPadded(to: resetWidth)) \("\(percent)%".leftPadded(to: percentWidth)) \(windowLabel)"
+    private static func menuBarLine(windowLabel: String, percent: Int, resetLabel: String, labelWidth: Int, percentWidth: Int) -> String {
+        "\(windowLabel.rightPadded(to: labelWidth)) \("\(percent)%".rightPadded(to: percentWidth)) \(resetLabel)"
     }
 
     private static func fallbackLines(for status: UsageStatus) -> [String] {
@@ -37,8 +37,8 @@ public enum UsageFormatter {
 }
 
 private extension String {
-    func leftPadded(to width: Int) -> String {
+    func rightPadded(to width: Int) -> String {
         guard count < width else { return self }
-        return String(repeating: " ", count: width - count) + self
+        return self + String(repeating: " ", count: width - count)
     }
 }

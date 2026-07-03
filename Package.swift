@@ -16,6 +16,7 @@ let package = Package(
         .executableTarget(name: "CodexUsageMenubar", dependencies: ["CodexUsageShared"]),
         .executableTarget(name: "CodexUsageNativeHost", dependencies: ["CodexUsageNativeHostCore"]),
         .testTarget(name: "CodexUsageSharedTests", dependencies: ["CodexUsageShared"]),
-        .testTarget(name: "CodexUsageNativeHostCoreTests", dependencies: ["CodexUsageNativeHostCore", "CodexUsageShared"])
+        .testTarget(name: "CodexUsageNativeHostCoreTests", dependencies: ["CodexUsageNativeHostCore", "CodexUsageShared"]),
+        .testTarget(name: "CodexUsageMenubarTests", dependencies: ["CodexUsageMenubar"])
     ]
 )

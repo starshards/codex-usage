@@ -29,7 +29,7 @@ final class TwoLineStatusView: NSView {
         for label in [firstLine, secondLine] {
             label.font = NSFont.monospacedDigitSystemFont(ofSize: 10, weight: .regular)
             label.textColor = .labelColor
-            label.alignment = .right
+            label.alignment = .left
             label.lineBreakMode = .byClipping
             label.translatesAutoresizingMaskIntoConstraints = false
             addSubview(label)
