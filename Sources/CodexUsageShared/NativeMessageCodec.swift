@@ -2,7 +2,9 @@ import Foundation
 
 public enum NativeMessageCodec {
     public static func encode<T: Encodable>(_ value: T) throws -> Data {
-        let payload = try JSONEncoder().encode(value)
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let payload = try encoder.encode(value)
         var data = Data()
         data.append(UInt8(payload.count & 0xff))
         data.append(UInt8((payload.count >> 8) & 0xff))
@@ -20,7 +22,9 @@ public enum NativeMessageCodec {
             (Int(data[3]) << 24)
         let payload = data.dropFirst(4)
         guard payload.count == length else { throw CodecError.lengthMismatch }
-        return try JSONDecoder().decode(T.self, from: payload)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return try decoder.decode(T.self, from: payload)
     }
 
     public enum CodecError: Error, Equatable {
