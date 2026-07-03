@@ -7,6 +7,10 @@ import { statusPayload } from "./usageTypes.js";
 const nativeClient = createNativeClient();
 const REFRESH_ALARM = "codex-usage-refresh";
 
+nativeClient.onEvent((message) => {
+  if (message.type === "refresh_now") refreshUsage(message.reason ?? "native_refresh");
+});
+
 chrome.runtime.onInstalled.addListener(async () => {
   chrome.idle.setDetectionInterval(60);
   await ensureRefreshAlarm();

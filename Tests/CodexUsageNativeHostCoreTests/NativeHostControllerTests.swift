@@ -28,4 +28,22 @@ final class NativeHostControllerTests: XCTestCase {
 
         XCTAssertEqual(try cache.load(), snapshot)
     }
+
+    func testConsumesPendingRefreshRequestAsRefreshNowEvent() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let refreshRequests = RefreshRequestStore(directory: directory)
+        _ = try refreshRequests.requestRefresh(reason: "manual", id: "refresh-1")
+        let controller = NativeHostController(
+            cache: UsageCacheStore(directory: directory),
+            refreshRequests: refreshRequests,
+            processStatus: ProcessStatusProvider(applications: [])
+        )
+
+        let event = try controller.consumeRefreshRequest()
+
+        XCTAssertEqual(event?.type, .refreshNow)
+        XCTAssertEqual(event?.reason, "manual")
+        XCTAssertNil(event?.requestId)
+        XCTAssertNil(try controller.consumeRefreshRequest())
+    }
 }

@@ -23,16 +23,27 @@ export function createRequestTracker() {
 
 export function createNativeClient(chromeRuntime = chrome.runtime) {
   const tracker = createRequestTracker();
+  const eventListeners = new Set();
   let port = null;
 
   function connect() {
+    if (port) return port;
+
     port = chromeRuntime.connectNative(HOST_NAME);
-    port.onMessage.addListener((message) => tracker.resolve(message));
+    port.onMessage.addListener((message) => {
+      if (message.requestId) {
+        tracker.resolve(message);
+        return;
+      }
+
+      for (const listener of eventListeners) listener(message);
+    });
     port.onDisconnect.addListener(() => {
       const message = chromeRuntime.lastError?.message ?? "native host disconnected";
       tracker.rejectAll(new Error(message));
       port = null;
     });
+    return port;
   }
 
   async function request(message) {
@@ -43,5 +54,10 @@ export function createNativeClient(chromeRuntime = chrome.runtime) {
     return response;
   }
 
-  return { connect, request };
+  function onEvent(listener) {
+    eventListeners.add(listener);
+    return () => eventListeners.delete(listener);
+  }
+
+  return { connect, request, onEvent };
 }

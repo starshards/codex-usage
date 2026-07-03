@@ -6,12 +6,14 @@ final class StatusItemController: NSObject {
     private let statusItem = NSStatusBar.system.statusItem(withLength: 86)
     private let statusView = TwoLineStatusView(frame: NSRect(x: 0, y: 0, width: 82, height: 22))
     private let cache: UsageCacheStore
+    private let refreshRequests: RefreshRequestStore
     private var timer: Timer?
     private var wakeObserver: WakeObserver?
     private var lastSnapshot: UsageSnapshot = .status(.noData)
 
-    init(cache: UsageCacheStore) {
+    init(cache: UsageCacheStore, refreshRequests: RefreshRequestStore = RefreshRequestStore()) {
         self.cache = cache
+        self.refreshRequests = refreshRequests
     }
 
     func start() {
@@ -22,7 +24,9 @@ final class StatusItemController: NSObject {
         }
         reloadFromCache()
         statusItem.menu = makeMenu()
-        wakeObserver = WakeObserver { [weak self] in self?.reloadFromCache() }
+        wakeObserver = WakeObserver { [weak self] in
+            try? self?.requestRefresh(reason: "wake")
+        }
         wakeObserver?.start()
         timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
             Task { @MainActor in
@@ -61,6 +65,11 @@ final class StatusItemController: NSObject {
     }
 
     @objc private func refreshNow() {
+        try? requestRefresh(reason: "manual")
+    }
+
+    func requestRefresh(reason: String) throws {
+        _ = try refreshRequests.requestRefresh(reason: reason)
         reloadFromCache()
     }
 

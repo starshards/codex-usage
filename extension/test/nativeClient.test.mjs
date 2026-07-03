@@ -30,3 +30,24 @@ test("rejects pending requests with native messaging lastError message", async (
 
   await assert.rejects(promise, /forbidden/);
 });
+
+test("dispatches unsolicited native events to listeners", () => {
+  const messageListeners = [];
+  const fakeRuntime = {
+    connectNative() {
+      return {
+        onMessage: { addListener(listener) { messageListeners.push(listener); } },
+        onDisconnect: { addListener() {} },
+        postMessage() {}
+      };
+    }
+  };
+  const client = createNativeClient(fakeRuntime);
+  const events = [];
+  client.onEvent((message) => events.push(message));
+
+  client.connect();
+  messageListeners[0]({ type: "refresh_now", reason: "manual" });
+
+  assert.deepEqual(events, [{ type: "refresh_now", reason: "manual" }]);
+});

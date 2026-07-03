@@ -1,12 +1,18 @@
 import CodexUsageShared
 import Foundation
 
-public struct NativeHostController {
+public struct NativeHostController: Sendable {
     private let cache: UsageCacheStore
+    private let refreshRequests: RefreshRequestStore
     private let processStatus: ProcessStatusProvider
 
-    public init(cache: UsageCacheStore = UsageCacheStore(), processStatus: ProcessStatusProvider = ProcessStatusProvider()) {
+    public init(
+        cache: UsageCacheStore = UsageCacheStore(),
+        refreshRequests: RefreshRequestStore = RefreshRequestStore(),
+        processStatus: ProcessStatusProvider = ProcessStatusProvider()
+    ) {
         self.cache = cache
+        self.refreshRequests = refreshRequests
         self.processStatus = processStatus
     }
 
@@ -44,5 +50,20 @@ public struct NativeHostController {
                 message: nil
             )
         }
+    }
+
+    public func consumeRefreshRequest() throws -> NativeEvent? {
+        guard let request = try refreshRequests.consumePendingRequest() else {
+            return nil
+        }
+
+        return NativeEvent(
+            type: .refreshNow,
+            requestId: nil,
+            codexRunning: nil,
+            lastUsage: nil,
+            reason: request.reason,
+            message: request.id
+        )
     }
 }
