@@ -29,7 +29,8 @@ export function createNativeClient(chromeRuntime = chrome.runtime) {
     port = chromeRuntime.connectNative(HOST_NAME);
     port.onMessage.addListener((message) => tracker.resolve(message));
     port.onDisconnect.addListener(() => {
-      tracker.rejectAll(new Error("native host disconnected"));
+      const message = chromeRuntime.lastError?.message ?? "native host disconnected";
+      tracker.rejectAll(new Error(message));
       port = null;
     });
   }

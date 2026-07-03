@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "swift test && npm run test:extension",
-    "test:extension": "node --test extension/test/*.test.mjs"
+    "test": "swift test && npm run test:js",
+    "test:extension": "node --test extension/test/*.test.mjs",
+    "test:scripts": "node --test scripts/test/*.test.mjs",
+    "test:js": "npm run test:extension && npm run test:scripts"
   }
 }
