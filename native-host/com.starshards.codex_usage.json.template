@@ -1,0 +1,9 @@
+{
+  "name": "com.starshards.codex_usage",
+  "description": "Codex Usage native messaging host",
+  "path": "__HOST_BINARY_PATH__",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://__EXTENSION_ID__/"
+  ]
+}
