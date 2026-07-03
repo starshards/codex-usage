@@ -10,14 +10,14 @@ export async function fetchUsageSource(sourceUrl, options = {}) {
   if (response.status === 401 || response.status === 403) {
     const tabFetched = await fetchUsageSourceFromExistingChatGPTTab(sourceUrl, chromeApi);
     if (tabFetched) return tabFetched;
-    return { status: "not_logged_in", text: "" };
+    return { status: "not_logged_in", text: "", detail: "no_chatgpt_tab" };
   }
 
   if (!response.ok) {
-    return { status: "network_failed", text: "" };
+    return { status: "network_failed", text: "", detail: `background_fetch_${response.status}` };
   }
 
-  return { status: "ok", text: await response.text() };
+  return { status: "ok", text: await response.text(), detail: "background_fetch_ok" };
 }
 
 async function fetchUsageSourceFromExistingChatGPTTab(sourceUrl, chromeApi) {
@@ -50,10 +50,10 @@ async function fetchUsageSourceFromExistingChatGPTTab(sourceUrl, chromeApi) {
   const result = results?.[0]?.result;
   if (!result) return null;
   if (result.status === 401 || result.status === 403) {
-    return { status: "not_logged_in", text: "" };
+    return { status: "not_logged_in", text: "", detail: `tab_fetch_${result.status}` };
   }
   if (!result.ok) {
-    return { status: "network_failed", text: "" };
+    return { status: "network_failed", text: "", detail: `tab_fetch_${result.status}` };
   }
-  return { status: "ok", text: result.text };
+  return { status: "ok", text: result.text, detail: "tab_fetch_ok" };
 }

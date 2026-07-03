@@ -47,7 +47,9 @@ async function refreshUsage(reason) {
     const fetched = await fetchUsageSource(USAGE_SOURCE_URL);
     const payload = fetched.status === "ok"
       ? parseUsageSource(fetched.text)
-      : statusPayload(fetched.status);
+      : statusPayload(fetched.status, {
+        sourceKind: `chatgpt-wham-usage:${fetched.detail ?? "unknown"}`
+      });
     payload.reason = reason;
     await nativeClient.request({ type: "usage_update", payload });
   } catch {

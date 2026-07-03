@@ -9,7 +9,7 @@ export function okUsagePayload({ fiveHour, weekly }, options = {}) {
     updatedAt: (options.now ?? new Date()).toISOString(),
     source: {
       parserVersion: "1",
-      sourceKind: USAGE_SOURCE_KIND
+      sourceKind: options.sourceKind ?? USAGE_SOURCE_KIND
     }
   };
 }
@@ -21,7 +21,7 @@ export function statusPayload(status, options = {}) {
     updatedAt: (options.now ?? new Date()).toISOString(),
     source: {
       parserVersion: "1",
-      sourceKind: USAGE_SOURCE_KIND
+      sourceKind: options.sourceKind ?? USAGE_SOURCE_KIND
     }
   };
 }
