@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Codex Usage Companion",
+  "version": "0.1.0",
+  "description": "Reads ChatGPT Codex usage and sends parsed results to the local menu bar app.",
+  "permissions": [
+    "alarms",
+    "idle",
+    "nativeMessaging",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://chatgpt.com/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  }
+}
