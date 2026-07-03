@@ -1,0 +1,7 @@
+.build/
+DerivedData/
+dist/
+*.xcuserstate
+.DS_Store
+node_modules/
+extension/fixtures/*.raw.*

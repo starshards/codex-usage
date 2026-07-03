@@ -1,0 +1,9 @@
+{
+  "name": "codex-usage",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "swift test && npm run test:extension",
+    "test:extension": "node --test extension/test/*.test.mjs"
+  }
+}
