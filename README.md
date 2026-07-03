@@ -46,6 +46,69 @@ open "dist/Codex Usage.app"
 pkill -f "/Users/star/myapp/codex-usage/dist/Codex Usage.app/Contents/MacOS/Codex Usage"
 ```
 
+## 发布打包
+
+推荐给别人使用的方式是 Developer ID 签名、公证后的 DMG，再上传到 GitHub Releases。这个 app 需要读取本机 `~/.codex/sessions`，不适合优先走 Mac App Store 沙盒分发。
+
+先做一个未签名包验证结构：
+
+```bash
+scripts/package-release.sh --version 0.1.0
+```
+
+产物会生成在：
+
+```text
+dist/release/Codex Usage-0.1.0.dmg
+dist/release/Codex Usage-0.1.0.zip
+```
+
+正式发布前，先确认证书在钥匙串里能被 `codesign` 找到：
+
+```bash
+security find-identity -v -p codesigning
+```
+
+然后保存一次 Apple notarytool 凭据：
+
+```bash
+xcrun notarytool store-credentials codex-usage-notary \
+  --apple-id you@example.com \
+  --team-id TEAMID \
+  --password app-specific-password
+```
+
+打 Developer ID 签名、公证并 staple：
+
+```bash
+scripts/package-release.sh \
+  --version 0.1.0 \
+  --sign-identity "Developer ID Application: Your Name (TEAMID)" \
+  --notary-profile codex-usage-notary \
+  --notarize
+```
+
+脚本会构建 Release 版本、写入 app bundle 的 `Info.plist`、签名 app、提交 app 公证、生成 ZIP 和带 `/Applications` 快捷方式的 DMG、签名并公证 DMG。
+
+上传到 GitHub Releases：
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+
+gh release create v0.1.0 \
+  "dist/release/Codex Usage-0.1.0.dmg" \
+  "dist/release/Codex Usage-0.1.0.zip" \
+  --title "Codex Usage v0.1.0" \
+  --notes "Initial release"
+```
+
+相关官方文档：
+
+- [Apple Developer ID](https://developer.apple.com/developer-id/)
+- [Notarizing macOS software before distribution](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution)
+- [GitHub Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository)
+
 ## 显示逻辑
 
 app 会扫描最近的 Codex session JSONL 文件，查找最新的 `token_count` 事件，并读取：
@@ -121,4 +184,3 @@ scripts/register-native-host.sh <chrome-extension-id>
 ## 隐私
 
 状态栏 app 只保存解析后的额度字段、重置时间、来源元数据和状态。它不保存 cookie、请求头、ChatGPT 原始响应，也不读取或保存 Codex 对话内容。
-
