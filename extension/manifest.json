@@ -7,7 +7,9 @@
     "alarms",
     "idle",
     "nativeMessaging",
-    "storage"
+    "scripting",
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
     "https://chatgpt.com/*"
