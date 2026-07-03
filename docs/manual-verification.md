@@ -30,3 +30,11 @@ Date: 2026-07-03
 - Native host smoke test: PASS, `node scripts/smoke-native-host.mjs`, returned `type: status` and `codexRunning: true`.
 - App bundle build: PASS, `scripts/build-app.sh`, created `dist/Codex Usage.app`.
 - Manual Chrome extension check: PENDING, requires loading `extension/` in Chrome and running `scripts/register-native-host.sh <extension-id>` with the generated extension ID.
+
+## Final Audit
+
+- Automated tests: PASS, `swift test` ran 10 tests and `npm run test:extension` ran 4 tests.
+- Native host smoke test: PASS, `node scripts/smoke-native-host.mjs` returned a `status` response.
+- Manual Chrome extension check: PENDING, requires manual unpacked extension load and native host registration with the generated extension ID.
+- Secret/raw-response scan: PASS, forbidden-term matches are limited to redaction code, tests with fake tokens, and documentation; the real user ID and email fragments from source discovery are not present.
+- Remaining known limitation: source depends on ChatGPT's non-public `https://chatgpt.com/backend-api/wham/usage` response shape, so parser maintenance may be needed if that endpoint changes.
