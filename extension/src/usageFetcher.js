@@ -42,13 +42,17 @@ async function fetchUsageSourceFromExistingChatGPTTab(sourceUrl, chromeApi) {
       return {
         status: response.status,
         ok: response.ok,
-        text: response.ok ? await response.text() : ""
+        text: response.ok ? await response.text() : "",
+        domText: response.ok ? "" : document.body?.innerText ?? document.body?.textContent ?? ""
       };
     }
   });
 
   const result = results?.[0]?.result;
   if (!result) return null;
+  if (result.domText) {
+    return { status: "ok", text: result.domText, detail: "tab_dom_text" };
+  }
   if (result.status === 401 || result.status === 403) {
     return { status: "not_logged_in", text: "", detail: `tab_fetch_${result.status}` };
   }

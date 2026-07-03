@@ -44,12 +44,19 @@ test("returns not_logged_in when no ChatGPT tab can perform the fallback fetch",
   assert.equal(fetched.detail, "no_chatgpt_tab");
 });
 
-test("reports when the ChatGPT tab fallback is still not logged in", async () => {
+test("returns rendered analytics text when the ChatGPT tab API fetch is still not logged in", async () => {
   const chromeApi = {
     tabs: { async query() { return [{ id: 123 }]; } },
     scripting: {
       async executeScript() {
-        return [{ result: { status: 401, ok: false, text: "" } }];
+        return [{
+          result: {
+            status: 401,
+            ok: false,
+            text: "",
+            domText: "56%\n剩余\n重置时间：1:22\n5%\n剩余\n重置时间：2026年7月7日 10:33"
+          }
+        }];
       }
     }
   };
@@ -59,6 +66,7 @@ test("reports when the ChatGPT tab fallback is still not logged in", async () =>
     fetchImpl: async () => ({ status: 403, ok: false, text: async () => "" })
   });
 
-  assert.equal(fetched.status, "not_logged_in");
-  assert.equal(fetched.detail, "tab_fetch_401");
+  assert.equal(fetched.status, "ok");
+  assert.equal(fetched.text.includes("56%"), true);
+  assert.equal(fetched.detail, "tab_dom_text");
 });

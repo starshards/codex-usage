@@ -22,3 +22,19 @@ test("parses redacted usage source fixture from top-level rate limit", () => {
   assert.equal(parsed.weekly.resetAt, expected.weekly.resetAt);
   assert.equal(parsed.source.sourceKind, expected.source.sourceKind);
 });
+
+test("parses rendered analytics text and ignores Spark limits", () => {
+  const source = fs.readFileSync("extension/fixtures/usage-source-v2.analytics-dom.txt", "utf8");
+
+  const parsed = parseUsageSource(source, {
+    timeZone: "Asia/Shanghai",
+    now: new Date("2026-07-03T16:10:00.000Z")
+  });
+
+  assert.equal(parsed.status, "ok");
+  assert.equal(parsed.fiveHour.remainingPercent, 56);
+  assert.equal(parsed.fiveHour.resetLabel, "01:22");
+  assert.equal(parsed.weekly.remainingPercent, 5);
+  assert.equal(parsed.weekly.resetLabel, "Tue");
+  assert.equal(parsed.source.sourceKind, "chatgpt-analytics-dom");
+});
