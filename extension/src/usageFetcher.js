@@ -31,6 +31,7 @@ async function fetchUsageSourceFromExistingChatGPTTab(sourceUrl, chromeApi) {
 
   const results = await chromeApi.scripting.executeScript({
     target: { tabId: tab.id },
+    world: "MAIN",
     args: [sourceUrl],
     func: async (url) => {
       const response = await fetch(url, {

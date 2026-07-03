@@ -13,6 +13,7 @@ test("falls back to an existing ChatGPT tab when background fetch is not logged 
     scripting: {
       async executeScript(options) {
         assert.equal(options.target.tabId, 123);
+        assert.equal(options.world, "MAIN");
         return [{ result: { status: 200, ok: true, text: "{\"ok\":true}" } }];
       }
     }
