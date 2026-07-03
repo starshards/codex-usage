@@ -6,14 +6,20 @@ final class StatusItemController: NSObject {
     private let statusItem = NSStatusBar.system.statusItem(withLength: 86)
     private let statusView = TwoLineStatusView(frame: NSRect(x: 0, y: 0, width: 82, height: 22))
     private let cache: UsageCacheStore
-    private let refreshRequests: RefreshRequestStore
+    private let localRateLimits: CodexSessionRateLimitStore
+    private let processStatus: ProcessStatusProvider
     private var timer: Timer?
     private var wakeObserver: WakeObserver?
     private var lastSnapshot: UsageSnapshot = .status(.noData)
 
-    init(cache: UsageCacheStore, refreshRequests: RefreshRequestStore = RefreshRequestStore()) {
+    init(
+        cache: UsageCacheStore,
+        localRateLimits: CodexSessionRateLimitStore = CodexSessionRateLimitStore(),
+        processStatus: ProcessStatusProvider = ProcessStatusProvider()
+    ) {
         self.cache = cache
-        self.refreshRequests = refreshRequests
+        self.localRateLimits = localRateLimits
+        self.processStatus = processStatus
     }
 
     func start() {
@@ -22,7 +28,7 @@ final class StatusItemController: NSObject {
             statusView.frame = button.bounds
             statusView.autoresizingMask = [.width, .height]
         }
-        reloadFromCache()
+        reloadUsage()
         statusItem.menu = makeMenu()
         wakeObserver = WakeObserver { [weak self] in
             try? self?.requestRefresh(reason: "wake")
@@ -30,13 +36,20 @@ final class StatusItemController: NSObject {
         wakeObserver?.start()
         timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
             Task { @MainActor in
-                self?.reloadFromCache()
+                self?.reloadUsage()
             }
         }
     }
 
-    private func reloadFromCache() {
-        lastSnapshot = (try? cache.load()) ?? .status(.noData)
+    private func reloadUsage() {
+        if !processStatus.isCodexRunning() {
+            lastSnapshot = .status(.pausedCodexNotRunning)
+        } else if let localSnapshot = localRateLimits.loadLatestSnapshot() {
+            lastSnapshot = localSnapshot
+            try? cache.save(localSnapshot)
+        } else {
+            lastSnapshot = (try? cache.load()) ?? .status(.noData)
+        }
         statusView.update(lines: UsageFormatter.menuBarLines(for: lastSnapshot))
         statusItem.menu = makeMenu()
     }
@@ -69,8 +82,7 @@ final class StatusItemController: NSObject {
     }
 
     func requestRefresh(reason: String) throws {
-        _ = try refreshRequests.requestRefresh(reason: reason)
-        reloadFromCache()
+        reloadUsage()
     }
 
     @objc private func openUsagePage() {
