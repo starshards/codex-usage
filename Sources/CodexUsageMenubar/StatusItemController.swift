@@ -7,6 +7,8 @@ final class StatusItemController: NSObject {
     private let statusView = TwoLineStatusView(frame: NSRect(x: 0, y: 0, width: 82, height: 22))
     private let cache: UsageCacheStore
     private var timer: Timer?
+    private var wakeObserver: WakeObserver?
+    private var lastSnapshot: UsageSnapshot = .status(.noData)
 
     init(cache: UsageCacheStore) {
         self.cache = cache
@@ -18,8 +20,10 @@ final class StatusItemController: NSObject {
             statusView.frame = button.bounds
             statusView.autoresizingMask = [.width, .height]
         }
-        statusItem.menu = makeMenu()
         reloadFromCache()
+        statusItem.menu = makeMenu()
+        wakeObserver = WakeObserver { [weak self] in self?.reloadFromCache() }
+        wakeObserver?.start()
         timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.reloadFromCache()
@@ -28,12 +32,21 @@ final class StatusItemController: NSObject {
     }
 
     private func reloadFromCache() {
-        let snapshot = (try? cache.load()) ?? .status(.noData)
-        statusView.update(lines: UsageFormatter.menuBarLines(for: snapshot))
+        lastSnapshot = (try? cache.load()) ?? .status(.noData)
+        statusView.update(lines: UsageFormatter.menuBarLines(for: lastSnapshot))
+        statusItem.menu = makeMenu()
     }
 
     private func makeMenu() -> NSMenu {
         let menu = NSMenu()
+        if let fiveHour = lastSnapshot.fiveHour {
+            menu.addItem(NSMenuItem(title: "5h: \(fiveHour.remainingPercent)% until \(fiveHour.resetLabel)", action: nil, keyEquivalent: ""))
+        }
+        if let weekly = lastSnapshot.weekly {
+            menu.addItem(NSMenuItem(title: "Weekly: \(weekly.remainingPercent)% until \(weekly.resetLabel)", action: nil, keyEquivalent: ""))
+        }
+        menu.addItem(NSMenuItem(title: "Status: \(lastSnapshot.status.rawValue)", action: nil, keyEquivalent: ""))
+        menu.addItem(.separator())
         let refresh = NSMenuItem(title: "Refresh Now", action: #selector(refreshNow), keyEquivalent: "r")
         refresh.target = self
         menu.addItem(refresh)
