@@ -9,7 +9,7 @@ final class UsageFormatterTests: XCTestCase {
             updatedAt: Date(timeIntervalSince1970: 1_783_084_500)
         )
 
-        XCTAssertEqual(UsageFormatter.menuBarLines(for: snapshot), ["5h 72% 18:30", "7d 41% 7/7"])
+        XCTAssertEqual(UsageFormatter.menuBarLines(for: snapshot), ["5h 72% 18:30", "1w 41% 7/7"])
     }
 
     func testAlignsOneDigitPercentInMenuBarColumns() {
@@ -19,7 +19,7 @@ final class UsageFormatterTests: XCTestCase {
             updatedAt: Date(timeIntervalSince1970: 1_783_084_500)
         )
 
-        XCTAssertEqual(UsageFormatter.menuBarLines(for: snapshot), ["5h 54% 01:22", "7d 4%  7/7"])
+        XCTAssertEqual(UsageFormatter.menuBarLines(for: snapshot), ["5h 54% 01:22", "1w 4%  7/7"])
     }
 
     func testFormatsFallbackStates() {

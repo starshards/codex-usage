@@ -22,7 +22,7 @@ final class CodexSessionRateLimitStoreTests: XCTestCase {
         XCTAssertEqual(snapshot.fiveHour?.remainingPercent, 37)
         XCTAssertEqual(snapshot.fiveHour?.resetLabel, "01:22")
         XCTAssertEqual(snapshot.weekly?.remainingPercent, 2)
-        XCTAssertEqual(snapshot.weekly?.resetLabel, "7/7")
+        XCTAssertEqual(snapshot.weekly?.resetLabel, "7月7日")
         XCTAssertEqual(snapshot.source.sourceKind, "codex-session-rate-limits")
         XCTAssertEqual(snapshot.updatedAt.timeIntervalSince1970, 1_783_097_865.035, accuracy: 0.001)
     }

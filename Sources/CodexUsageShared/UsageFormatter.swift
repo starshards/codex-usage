@@ -9,12 +9,12 @@ public enum UsageFormatter {
             return fallbackLines(for: snapshot.status)
         }
 
-        let labelWidth = max("5h".count, "7d".count)
+        let labelWidth = max("5h".count, "1w".count)
         let percentWidth = max("\(fiveHour.remainingPercent)%".count, "\(weekly.remainingPercent)%".count)
 
         return [
             menuBarLine(windowLabel: "5h", percent: fiveHour.remainingPercent, resetLabel: fiveHour.resetLabel, labelWidth: labelWidth, percentWidth: percentWidth),
-            menuBarLine(windowLabel: "7d", percent: weekly.remainingPercent, resetLabel: weekly.resetLabel, labelWidth: labelWidth, percentWidth: percentWidth)
+            menuBarLine(windowLabel: "1w", percent: weekly.remainingPercent, resetLabel: weekly.resetLabel, labelWidth: labelWidth, percentWidth: percentWidth)
         ]
     }
 

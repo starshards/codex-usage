@@ -110,7 +110,7 @@ public struct CodexSessionRateLimitStore: Sendable {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.timeZone = timeZone
-        formatter.dateFormat = "M/d"
+        formatter.dateFormat = "M月d日"
         return formatter.string(from: date)
     }
 
