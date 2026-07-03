@@ -10,8 +10,8 @@ public enum UsageFormatter {
         }
 
         return [
-            "5h \(fiveHour.remainingPercent)% \(fiveHour.resetLabel)",
-            "W  \(weekly.remainingPercent)% \(weekly.resetLabel)"
+            "\(fiveHour.resetLabel)  \(fiveHour.remainingPercent)% 5h",
+            "\(weekly.resetLabel) \(weekly.remainingPercent)% week"
         ]
     }
 

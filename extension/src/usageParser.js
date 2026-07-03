@@ -9,7 +9,7 @@ export function parseUsageSource(sourceText, options = {}) {
 
     return okUsagePayload({
       fiveHour: parseWindow(primary, "time", options),
-      weekly: parseWindow(secondary, "weekday", options)
+      weekly: parseWindow(secondary, "date", options)
     }, options);
   } catch {
     const analyticsText = tryParseAnalyticsText(source, options);
@@ -30,8 +30,8 @@ function parseWindow(window, labelKind, options) {
 
   return {
     remainingPercent: clampPercent(100 - usedPercent),
-    resetLabel: labelKind === "weekday"
-      ? formatWeekday(resetDate, options.timeZone)
+    resetLabel: labelKind === "date"
+      ? formatMonthDay(resetDate, options.timeZone)
       : formatTime(resetDate, options.timeZone),
     resetAt: resetDate.toISOString()
   };
@@ -58,11 +58,15 @@ function formatTime(date, timeZone) {
   }).format(date);
 }
 
-function formatWeekday(date, timeZone) {
-  return new Intl.DateTimeFormat("en-US", {
+function formatMonthDay(date, timeZone) {
+  const parts = new Intl.DateTimeFormat("en-US", {
     timeZone,
-    weekday: "short"
-  }).format(date);
+    month: "numeric",
+    day: "numeric"
+  }).formatToParts(date);
+  const month = parts.find(part => part.type === "month")?.value;
+  const day = parts.find(part => part.type === "day")?.value;
+  return `${month}/${day}`;
 }
 
 function tryParseAnalyticsText(source, options) {
@@ -92,7 +96,7 @@ function tryParseAnalyticsText(source, options) {
     },
     weekly: {
       remainingPercent: blocks[1].remainingPercent,
-      resetLabel: formatWeekday(parseChineseDateTime(blocks[1].resetText), options.timeZone),
+      resetLabel: formatMonthDay(parseChineseDateTime(blocks[1].resetText), options.timeZone),
       resetAt: parseChineseDateTime(blocks[1].resetText).toISOString()
     }
   };

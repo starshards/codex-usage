@@ -35,6 +35,6 @@ test("parses rendered analytics text and ignores Spark limits", () => {
   assert.equal(parsed.fiveHour.remainingPercent, 56);
   assert.equal(parsed.fiveHour.resetLabel, "01:22");
   assert.equal(parsed.weekly.remainingPercent, 5);
-  assert.equal(parsed.weekly.resetLabel, "Tue");
+  assert.equal(parsed.weekly.resetLabel, "7/7");
   assert.equal(parsed.source.sourceKind, "chatgpt-analytics-dom");
 });
