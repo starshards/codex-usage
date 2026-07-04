@@ -58,8 +58,8 @@ public struct CodexSessionRateLimitStore: Sendable {
                   let event = try? decoder.decode(CodexSessionEvent.self, from: data),
                   event.type == "event_msg",
                   event.payload.type == "token_count",
-                  event.payload.rateLimits?.primary != nil,
-                  event.payload.rateLimits?.secondary != nil
+                  let rateLimits = event.payload.rateLimits,
+                  !rateLimits.isSparkLimit
             else {
                 continue
             }
@@ -143,8 +143,21 @@ private struct CodexSessionEvent: Decodable {
 }
 
 private struct CodexRateLimits: Decodable {
+    var limitId: String?
+    var limitName: String?
     var primary: CodexRateLimitWindow
     var secondary: CodexRateLimitWindow
+
+    var isSparkLimit: Bool {
+        limitId == "codex_bengalfox" || limitName == "GPT-5.3-Codex-Spark"
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case limitId = "limit_id"
+        case limitName = "limit_name"
+        case primary
+        case secondary
+    }
 }
 
 private struct CodexRateLimitWindow: Decodable {
