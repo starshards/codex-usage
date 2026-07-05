@@ -40,7 +40,6 @@ public struct NativeHostController: Sendable {
                 )
             }
 
-            try cache.save(payload)
             return NativeEvent(
                 type: .ack,
                 requestId: request.requestId,

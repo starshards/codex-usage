@@ -18,15 +18,26 @@ final class NativeHostControllerTests: XCTestCase {
         XCTAssertEqual(event.lastUsage?.status, .noData)
     }
 
-    func testUsageUpdatePersistsPayload() throws {
+    func testUsageUpdateAcknowledgesButDoesNotOverwriteLocalCache() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let cache = UsageCacheStore(directory: directory)
         let controller = NativeHostController(cache: cache, processStatus: ProcessStatusProvider(applications: []))
-        let snapshot = UsageSnapshot.status(.pausedCodexNotRunning)
+        let localSnapshot = UsageSnapshot(
+            schemaVersion: 1,
+            status: .ok,
+            fiveHour: QuotaWindow(remainingPercent: 91, resetLabel: "01:55", resetAt: nil),
+            weekly: QuotaWindow(remainingPercent: 96, resetLabel: "7月11日", resetAt: nil),
+            updatedAt: Date(timeIntervalSince1970: 1_783_169_520),
+            source: UsageSource(sourceKind: "codex-session-rate-limits")
+        )
+        try cache.save(localSnapshot)
+        let chromeSnapshot = UsageSnapshot.status(.parseFailed, updatedAt: Date(timeIntervalSince1970: 1_783_169_580))
 
-        _ = try controller.handle(NativeRequest(type: .usageUpdate, requestId: "2", payload: snapshot))
+        let event = try controller.handle(NativeRequest(type: .usageUpdate, requestId: "2", payload: chromeSnapshot))
 
-        XCTAssertEqual(try cache.load(), snapshot)
+        XCTAssertEqual(event.type, .ack)
+        XCTAssertEqual(event.requestId, "2")
+        XCTAssertEqual(try cache.load(), localSnapshot)
     }
 
     func testConsumesPendingRefreshRequestAsRefreshNowEvent() throws {

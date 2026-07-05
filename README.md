@@ -17,7 +17,7 @@
 - Codex 正在运行时，状态栏每 5 秒刷新一次显示。
 - Codex 未运行时显示 `Paused`。
 - 解析后的轻量缓存写到 `~/Library/Application Support/CodexUsageMenubar/usage.json`。
-- 仓库里仍保留早期 Chrome Native Messaging 方案，但当前状态栏正常显示不再依赖 Chrome。
+- 仓库里仍保留早期 Chrome Native Messaging 方案，但当前状态栏正常显示不再依赖 Chrome，Chrome 也不会再写入状态栏缓存。
 
 ## 环境要求
 
@@ -162,7 +162,7 @@ npm run test:js
 - `Sources/CodexUsageNativeHost/`
 - `scripts/register-native-host.sh`
 
-它们属于早期网页用量来源方案。当前状态栏显示已经改成本地 session 优先，正常使用不需要安装扩展。
+它们属于早期网页用量来源方案。当前状态栏显示已经改成本地 session 优先，正常使用不需要安装扩展。Native host 会继续响应 Chrome 的状态查询和刷新事件，但会忽略 Chrome 发来的 `usage_update`，避免覆盖本地 session 解析出的缓存。
 
 如果要继续调试扩展，可以注册 native host：
 
