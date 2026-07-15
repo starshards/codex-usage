@@ -18,4 +18,12 @@ final class ProcessStatusProviderTests: XCTestCase {
 
         XCTAssertFalse(provider.isCodexRunning())
     }
+
+    func testDetectsRenamedChatGPTApplicationByLocalizedName() {
+        let provider = ProcessStatusProvider(applications: [
+            RunningApplication(bundleIdentifier: nil, localizedName: "ChatGPT")
+        ])
+
+        XCTAssertTrue(provider.isCodexRunning())
+    }
 }

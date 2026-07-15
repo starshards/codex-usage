@@ -30,7 +30,9 @@ public struct ProcessStatusProvider: Sendable {
         applicationsProvider().contains { app in
             app.bundleIdentifier == "com.openai.codex" ||
                 app.localizedName == "Codex" ||
-                app.localizedName == "Codex.app"
+                app.localizedName == "Codex.app" ||
+                app.localizedName == "ChatGPT" ||
+                app.localizedName == "ChatGPT.app"
         }
     }
 }

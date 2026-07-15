@@ -2,20 +2,25 @@ import Foundation
 
 public enum UsageFormatter {
     public static func menuBarLines(for snapshot: UsageSnapshot) -> [String] {
-        guard snapshot.status == .ok,
-              let fiveHour = snapshot.fiveHour,
-              let weekly = snapshot.weekly
-        else {
+        guard snapshot.status == .ok else {
             return fallbackLines(for: snapshot.status)
         }
 
-        let labelWidth = max("5h".count, "1w".count)
-        let percentWidth = max("\(fiveHour.remainingPercent)%".count, "\(weekly.remainingPercent)%".count)
+        if let fiveHour = snapshot.fiveHour, let weekly = snapshot.weekly {
+            let labelWidth = max("5h".count, "1w".count)
+            let percentWidth = max("\(fiveHour.remainingPercent)%".count, "\(weekly.remainingPercent)%".count)
 
-        return [
-            menuBarLine(windowLabel: "5h", percent: fiveHour.remainingPercent, resetLabel: fiveHour.resetLabel, labelWidth: labelWidth, percentWidth: percentWidth),
-            menuBarLine(windowLabel: "1w", percent: weekly.remainingPercent, resetLabel: weekly.resetLabel, labelWidth: labelWidth, percentWidth: percentWidth)
-        ]
+            return [
+                menuBarLine(windowLabel: "5h", percent: fiveHour.remainingPercent, resetLabel: fiveHour.resetLabel, labelWidth: labelWidth, percentWidth: percentWidth),
+                menuBarLine(windowLabel: "1w", percent: weekly.remainingPercent, resetLabel: weekly.resetLabel, labelWidth: labelWidth, percentWidth: percentWidth)
+            ]
+        }
+
+        if let weekly = snapshot.weekly {
+            return ["ChatGPT", "1w \(weekly.remainingPercent)% \(weekly.resetLabel)"]
+        }
+
+        return fallbackLines(for: .noData)
     }
 
     private static func menuBarLine(windowLabel: String, percent: Int, resetLabel: String, labelWidth: Int, percentWidth: Int) -> String {
@@ -29,9 +34,9 @@ public enum UsageFormatter {
         case .notLoggedIn:
             return ["Login", ""]
         case .networkFailed, .parseFailed, .noData:
-            return ["Codex --", ""]
+            return ["ChatGPT --", ""]
         case .ok:
-            return ["Codex --", ""]
+            return ["ChatGPT --", ""]
         }
     }
 }

@@ -22,9 +22,22 @@ final class UsageFormatterTests: XCTestCase {
         XCTAssertEqual(UsageFormatter.menuBarLines(for: snapshot), ["5h 54% 01:22", "1w 4%  7/7"])
     }
 
+    func testFormatsWeeklyOnlySnapshotAsTwoLines() {
+        let snapshot = UsageSnapshot(
+            schemaVersion: 1,
+            status: .ok,
+            fiveHour: nil,
+            weekly: QuotaWindow(remainingPercent: 64, resetLabel: "7月22日", resetAt: nil),
+            updatedAt: Date(),
+            source: UsageSource(sourceKind: "codex-session-rate-limits")
+        )
+
+        XCTAssertEqual(UsageFormatter.menuBarLines(for: snapshot), ["ChatGPT", "1w 64% 7月22日"])
+    }
+
     func testFormatsFallbackStates() {
         XCTAssertEqual(UsageFormatter.menuBarLines(for: .status(.pausedCodexNotRunning)), ["Paused", ""])
         XCTAssertEqual(UsageFormatter.menuBarLines(for: .status(.notLoggedIn)), ["Login", ""])
-        XCTAssertEqual(UsageFormatter.menuBarLines(for: .status(.noData)), ["Codex --", ""])
+        XCTAssertEqual(UsageFormatter.menuBarLines(for: .status(.noData)), ["ChatGPT --", ""])
     }
 }

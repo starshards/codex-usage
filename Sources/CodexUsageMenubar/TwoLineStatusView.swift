@@ -1,7 +1,7 @@
 import AppKit
 
 final class TwoLineStatusView: NSView {
-    private let firstLine = NSTextField(labelWithString: "Codex --")
+    private let firstLine = NSTextField(labelWithString: "ChatGPT --")
     private let secondLine = NSTextField(labelWithString: "")
 
     override init(frame frameRect: NSRect) {
