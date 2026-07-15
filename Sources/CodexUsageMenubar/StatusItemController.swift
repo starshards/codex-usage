@@ -56,11 +56,8 @@ final class StatusItemController: NSObject {
 
     private func makeMenu() -> NSMenu {
         let menu = NSMenu()
-        if let fiveHour = lastSnapshot.fiveHour {
-            menu.addItem(NSMenuItem(title: "5h: \(fiveHour.remainingPercent)% until \(fiveHour.resetLabel)", action: nil, keyEquivalent: ""))
-        }
-        if let weekly = lastSnapshot.weekly {
-            menu.addItem(NSMenuItem(title: "Weekly: \(weekly.remainingPercent)% until \(weekly.resetLabel)", action: nil, keyEquivalent: ""))
+        for title in Self.quotaMenuTitles(for: lastSnapshot) {
+            menu.addItem(NSMenuItem(title: title, action: nil, keyEquivalent: ""))
         }
         menu.addItem(NSMenuItem(title: "Status: \(lastSnapshot.status.rawValue)", action: nil, keyEquivalent: ""))
         menu.addItem(.separator())
@@ -75,6 +72,17 @@ final class StatusItemController: NSObject {
         quit.target = self
         menu.addItem(quit)
         return menu
+    }
+
+    static func quotaMenuTitles(for snapshot: UsageSnapshot) -> [String] {
+        var titles: [String] = []
+        if let fiveHour = snapshot.fiveHour {
+            titles.append("5h: \(fiveHour.remainingPercent)% until \(fiveHour.resetLabel)")
+        }
+        if let weekly = snapshot.weekly {
+            titles.append("Weekly: \(weekly.remainingPercent)% until \(weekly.resetLabel)")
+        }
+        return titles
     }
 
     @objc private func refreshNow() {

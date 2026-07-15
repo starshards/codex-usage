@@ -15,6 +15,18 @@ final class TwoLineStatusViewTests: XCTestCase {
 
 @MainActor
 final class StatusItemControllerTests: XCTestCase {
+    func testWeeklyOnlySnapshotProducesOnlyWeeklyMenuTitle() {
+        var snapshot = UsageSnapshot.status(.ok)
+        snapshot.weekly = QuotaWindow(remainingPercent: 64, resetLabel: "7月22日", resetAt: nil)
+        snapshot.updatedAt = Date()
+        snapshot.source = UsageSource(sourceKind: "codex-session-rate-limits")
+
+        XCTAssertEqual(
+            StatusItemController.quotaMenuTitles(for: snapshot),
+            ["Weekly: 64% until 7月22日"]
+        )
+    }
+
     func testRequestRefreshLoadsLocalCodexRateLimits() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let sessionsDirectory = directory.appendingPathComponent("sessions", isDirectory: true)
