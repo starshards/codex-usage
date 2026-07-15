@@ -73,4 +73,41 @@ final class CodexSessionRateLimitStoreTests: XCTestCase {
         XCTAssertEqual(snapshot.weekly?.remainingPercent, 2)
         XCTAssertEqual(snapshot.updatedAt.timeIntervalSince1970, 1_783_097_865.035, accuracy: 0.001)
     }
+
+    func testLoadsWeeklyOnlyRateLimitFromPrimaryWindow() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let sessionDirectory = root.appendingPathComponent("2026/07/15", isDirectory: true)
+        try FileManager.default.createDirectory(at: sessionDirectory, withIntermediateDirectories: true)
+        let sessionFile = sessionDirectory.appendingPathComponent("rollout.jsonl")
+        try #"{"timestamp":"2026-07-15T00:00:00.000Z","type":"event_msg","payload":{"type":"token_count","rate_limits":{"limit_id":"codex","limit_name":null,"primary":{"used_percent":36,"window_minutes":10080,"resets_at":1783391609},"secondary":null,"plan_type":"prolite"}}}"#
+            .write(to: sessionFile, atomically: true, encoding: .utf8)
+        let store = CodexSessionRateLimitStore(
+            sessionsDirectory: root,
+            timeZone: TimeZone(identifier: "Asia/Shanghai")!
+        )
+
+        let snapshot = try XCTUnwrap(store.loadLatestSnapshot())
+
+        XCTAssertNil(snapshot.fiveHour)
+        XCTAssertEqual(snapshot.weekly?.remainingPercent, 64)
+        XCTAssertEqual(snapshot.weekly?.resetLabel, "7月7日")
+    }
+
+    func testMapsRateLimitWindowsByDurationInsteadOfSlot() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let sessionDirectory = root.appendingPathComponent("2026/07/15", isDirectory: true)
+        try FileManager.default.createDirectory(at: sessionDirectory, withIntermediateDirectories: true)
+        let sessionFile = sessionDirectory.appendingPathComponent("rollout.jsonl")
+        try #"{"timestamp":"2026-07-15T00:00:00.000Z","type":"event_msg","payload":{"type":"token_count","rate_limits":{"limit_id":"codex","limit_name":null,"primary":{"used_percent":36,"window_minutes":10080,"resets_at":1783391609},"secondary":{"used_percent":25,"window_minutes":300,"resets_at":1783099357},"plan_type":"prolite"}}}"#
+            .write(to: sessionFile, atomically: true, encoding: .utf8)
+        let store = CodexSessionRateLimitStore(
+            sessionsDirectory: root,
+            timeZone: TimeZone(identifier: "Asia/Shanghai")!
+        )
+
+        let snapshot = try XCTUnwrap(store.loadLatestSnapshot())
+
+        XCTAssertEqual(snapshot.fiveHour?.remainingPercent, 75)
+        XCTAssertEqual(snapshot.weekly?.remainingPercent, 64)
+    }
 }

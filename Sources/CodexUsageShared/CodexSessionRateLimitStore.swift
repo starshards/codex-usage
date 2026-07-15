@@ -75,11 +75,17 @@ public struct CodexSessionRateLimitStore: Sendable {
             return nil
         }
 
+        let fiveHour = rateLimits.windows.first { $0.windowMinutes == 300 }
+        let weekly = rateLimits.windows.first { $0.windowMinutes == 10_080 }
+        guard fiveHour != nil || weekly != nil else {
+            return nil
+        }
+
         return UsageSnapshot(
             schemaVersion: 1,
             status: .ok,
-            fiveHour: quotaWindow(from: rateLimits.primary, labelKind: .time),
-            weekly: quotaWindow(from: rateLimits.secondary, labelKind: .date),
+            fiveHour: fiveHour.map { quotaWindow(from: $0, labelKind: .time) },
+            weekly: weekly.map { quotaWindow(from: $0, labelKind: .date) },
             updatedAt: timestamp,
             source: UsageSource(sourceKind: "codex-session-rate-limits")
         )
@@ -145,11 +151,15 @@ private struct CodexSessionEvent: Decodable {
 private struct CodexRateLimits: Decodable {
     var limitId: String?
     var limitName: String?
-    var primary: CodexRateLimitWindow
-    var secondary: CodexRateLimitWindow
+    var primary: CodexRateLimitWindow?
+    var secondary: CodexRateLimitWindow?
 
     var isSparkLimit: Bool {
         limitId == "codex_bengalfox" || limitName == "GPT-5.3-Codex-Spark"
+    }
+
+    var windows: [CodexRateLimitWindow] {
+        [primary, secondary].compactMap { $0 }
     }
 
     enum CodingKeys: String, CodingKey {
